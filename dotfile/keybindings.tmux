@@ -7,5 +7,5 @@ unbind-key '"'
 
 bind-key '"' display-panes \; split-window -v -c "#{pane_current_path}"
 
-bind-key x  kill-pane
+bind-key x  confirm-before "kill-pane "
 
