@@ -9,6 +9,7 @@
 call plug#begin()
 Plug 'fatih/vim-go'
 Plug 'fatih/molokai'
+Plug 'uarun/vim-protobuf'
 "Plug 'AndrewRadev/splitjoin.vim'
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
@@ -24,7 +25,12 @@ Plug 'airblade/vim-gitgutter'
 Plug 'powerline/powerline', {'rtp': 'powerline/bindings/vim/'}
 "Plug 'stephpy/vim-yaml'
 Plug 'elzr/vim-json'
+Plug 'Valloric/YouCompleteMe'
 Plug 'Rip-Rip/clang_complete'
+Plug 'vim-syntastic/syntastic'
+Plug 'scrooloose/nerdtree'
+Plug 'Yggdroot/indentLine'
+"Plug 'davidhalter/jedi-vim'
 "Plug 'andrewstuart/vim-kubernetes'
 "Plug 'ingydotnet/yaml-vim'
 "Plug 'chase/vim-ansible-yaml'
@@ -104,11 +110,12 @@ let mapleader = ","
 
 " Jump to next error with Ctrl-n and previous error with Ctrl-m. Close the
 " quickfix window with <leader>a
-map <C-n> :cnext<CR>
-map <C-m> :cprevious<CR>
+map <C-n> :lnext<CR>
+map <C-m> :lprevious<CR>
 nnoremap <leader>a :cclose<CR>
 nnoremap <silent> <F9> :TagbarToggle<CR>
-nnoremap <silent> <F7> :Project<CR>
+nmap <silent> <F7> <Plug>ToggleProject
+" nnoremap <leader><tab> :IndentLinesToggle<CR>
 
 " Visual linewise up and down by default (and use gj gk to go quicker)
 noremap <Up> gk
@@ -126,17 +133,30 @@ nnoremap Y y$
 " Enter automatically into the files directory
 autocmd BufEnter * silent! lcd %:p:h
 
+" reload vimrc
+nnoremap <C-R> :so ~/.vimrc <CR>
+
 
 """""""""""""""""""""
 "      Plugins      "
 """""""""""""""""""""
+" indent line
+let g:indentLine_enabled = 1
+let g:indentLine_color_term = 239
+" vim-project
+let g:project_use_nerdtree = 1
 " json-plugin
 let g:vim_json_syntax_conceal = 0
-
+" syntastic
+let g:syntastic_auto_loc_list = 1
 " vim-go
+let g:syntastic_aggregate_errors = 1
+let g:syntastic_go_checkers = ['govet']
+"let g:syntastic_mode_map = { 'mode': 'active', 'passive_filetypes': ['go'] }
 let g:go_fmt_command = "gofmt"
+"let g:go_fmt_command = "goimports"
 let g:go_autodetect_gopath = 1
-let g:go_list_type = "quickfix"
+let g:go_list_type = "locationlist"
 
 let g:go_highlight_types = 1
 let g:go_highlight_fields = 1
@@ -145,33 +165,15 @@ let g:go_highlight_methods = 1
 let g:go_highlight_extra_types = 1
 let g:go_highlight_generate_tags = 1
 let g:tagbar_type_go = {
-    \ 'ctagstype' : 'go',
-    \ 'kinds'     : [
-        \ 'p:package',
-        \ 'i:imports:1',
-        \ 'c:constants',
-        \ 'v:variables',
-        \ 't:types',
-        \ 'n:interfaces',
-        \ 'w:fields',
-        \ 'e:embedded',
-        \ 'm:methods',
-        \ 'r:constructor',
-        \ 'f:functions'
-    \ ],
-    \ 'sro' : '.',
-    \ 'kind2scope' : {
-        \ 't' : 'ctype',
-        \ 'n' : 'ntype'
-    \ },
-    \ 'scope2kind' : {
-        \ 'ctype' : 't',
-        \ 'ntype' : 'n'
-    \ },
-    \ 'ctagsbin'  : 'gotags',
-    \ 'ctagsargs' : '-sort -silent'
-    \ }
-
+    \ 'ctagstype': 'go',
+    \ 'kinds' : [
+        \'p:package',
+        \'f:function',
+        \'v:variables',
+        \'t:type',
+        \'c:const'
+    \]
+\}
 " Open :GoDeclsDir with ctrl-g
 nmap <C-g> :GoDeclsDir<cr>
 imap <C-g> <esc>:<C-u>GoDeclsDir<cr>
@@ -183,7 +185,6 @@ augroup go
   " Show TagbarToggle
   " autocmd BufReadPost *.go call tagbar#autoopen()
   " autocmd FileType go nmap <leader>w <Plug>(tagbar)
-
   " Show by default 4 spaces for a tab
   autocmd BufNewFile,BufRead *.go setlocal expandtab tabstop=4 shiftwidth=4
 
@@ -232,12 +233,19 @@ function! s:build_go_files()
 endfunction
 "let g:SuperTabRetainCompletionType = 2
 let g:SuperTabDefaultCompletionType = "<C-x><C-o>"
+let g:ycm_autoclose_preview_window_after_completion=1
 
 
 " Ali: to indent json files on save
 " autocmd FileType json autocmd BufWritePre <buffer> %!python -m json.tool
 " autocmd BufWritePre <buffer> %! sed -i "s/\t/    /g"
 
+augroup py
+  let g:ycm_python_binary_path = 'python'
+  autocmd BufNewFile *.py 0r ~/.vim_custom/python_head.template
+augroup END
+
+let g:UltiSnipsExpandTrigger = "<leader><tab>"
 
 augroup c
     "autocmd FileType c,cpp set tags+=tags
